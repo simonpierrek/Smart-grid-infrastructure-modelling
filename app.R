@@ -8,7 +8,7 @@ library(shiny)
 ui <- fluidPage(
     theme = shinythemes::shinytheme("cosmo"),
     # Application title
-    h1(strong("Smart grid module"), "by Simon Pierre", align = 'center'),
+    h1(strong("Smart grid module"), "by Simon Pierre, , KIRIBOU Razak, KOKOYE Glory ", align = 'center'),
     #inputs for Hydropower module
     img(src = 'logo.gif', align = 'center'),
     #image of Wascal
@@ -31,9 +31,9 @@ ui <- fluidPage(
            h4("The Wind turbine module"),
            sidebarLayout(
                sidebarPanel(
-                   numericInput("x", "Enter the air density", value = 1),
-                   numericInput("A", "Enter the swept area of the turbines blades", value = 1),
-                   numericInput("v", "Enter the wind speed", value = 1)
+                   numericInput("x", "Enter the air density", value = 1.225),
+                   numericInput("A", "Enter the swept area of the turbines blades", value = 2826),
+                   numericInput("v", "Enter the wind speed", value = 20)
                ),
                mainPanel(
                    p(h3('The power of your wind turbine module is', em('(in MegaWatts):'), strong(textOutput("Pw"))))
@@ -47,14 +47,13 @@ ui <- fluidPage(
                            h5("The Reverse saturation content"),
                            sidebarLayout(
                                sidebarPanel(
-                                   numericInput("Isc", "Enter the cell's short circuit current at a 25^0 C and 1  kW⁄m^2", 9.31),
-                                   numericInput("Voc", "Enter the cell open current voltage", 36.6),
-                                   numericInput("Fif", "Enter the cell idealising factor",1,5),
-                                   numericInput("Tc", "Enter the cell' s absolute temperature",51.27)
+                                   numericInput("Isc", "Enter the cell's short circuit current at a 25^0 C and 1  kW⁄m^2", 9.06),
+                                   numericInput("Voc", "Enter the cell open current voltage", 20),
+                                   numericInput("Fif", "Enter the cell idealising factor",1.3),
+                                   numericInput("Tc", "Enter the cell' s absolute temperature",293.15)
                                ),
                                mainPanel(
-                                   p(h3("The cell' s reverse saturation current at a solar radiation & reference temperature: Ioa is :")),
-                                   textOutput("Ioa")
+                                   p(h3("The cell' s reverse saturation current at a solar radiation & reference temperature: Ioa is :", strong(textOutput("Ioa")))),
                                )
                            )
                        ),
@@ -62,14 +61,13 @@ ui <- fluidPage(
                         h5("The dark saturation current"),
                         sidebarLayout(
                             sidebarPanel(
-                                numericInput("Ioad", "Enter the The dark saturation current (Ioa) value", 1),
-                                numericInput("Tr", "Enter the cell' s reference temperature", 1),
-                                numericInput("Vg", "Enter the band-gap energy of the semiconductor used in the cell", 1)
+                                numericInput("Tr", "Enter the cell' s reference temperature", 298),
+                                numericInput("Vg", "Enter the band-gap energy of the semiconductor used in the cell", 1.1)
                                 
                             ),
                             mainPanel(
-                            p(h3("The dark saturation current Io is :")),
-                            textOutput("Io")
+                            p(h3("The dark saturation current Io is :", strong( textOutput("Io")))),
+                           
                         )
                     )
                  ),
@@ -77,12 +75,11 @@ ui <- fluidPage(
                      h5("The light generated current (photocurrent)"),
                      sidebarLayout(
                          sidebarPanel(
-                             numericInput("Msc", "Enter the temperature coefficient of the cell's short circuit", 1),
-                             numericInput("G", "Enter the solar irradiation in  kW⁄m^2 ", 1)
+                             numericInput("Msc", "Enter the temperature coefficient of the cell's short circuit", 0.00058),
+                             numericInput("G", "Enter the solar irradiation in  kW⁄m^2 ", 1000)
                          ),
                          mainPanel(
-                             p(h3("The light generated current (photocurrent) :")),
-                             textOutput("Igc")
+                             p(h3("The light generated current (photocurrent) :", strong(textOutput("Igc"))))
                          )
                      )
                  ),
@@ -90,15 +87,11 @@ ui <- fluidPage(
                      h5("The photovoltaic module"),
                      sidebarLayout(
                          sidebarPanel(
-                             numericInput("Iod", "Enter dark saturation current (Io) value", 1),
-                             numericInput("Igcd", "Enter The light generated current (photocurrent) value (Igc) ", 1),
-                             numericInput("Msc", "Enter the temperature coefficient of the cell's short circuit", 1),
-                             numericInput("G", "Enter the solar irradiation in  kW⁄m^2 ", 1),
+                             numericInput("Vd", "Enter the band-gap energy of the semiconductor used in the cell", 1),
                              numericInput("Rp", "Enter the parallel resistance value", 1)
                          ),
                          mainPanel(
-                             p(h3("The photovoltaic module Ipv is:")),
-                             textOutput("Ipv")
+                             p(h3("The photovoltaic module Ipv is:", strong(textOutput("IPV"))))
                          )
                      )
                  )
@@ -111,7 +104,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+    
     output$P <- renderText({
         (input$n*input$p*input$Q*input$g*input$h)/1000000
     })
@@ -121,14 +114,15 @@ server <- function(input, output) {
     output$Ioa <- renderText({
          input$Isc/exp((input$Voc * 1.6 * 10^(-19))/(input$Fif * input$Tc * 1.38 * 10 ^ (-23)))
     })
+    
     output$Io <- renderText({
-        input$Ioad * ((input$Tc/input$Tr)^3) * exp(((1/input$Tr - input$Tc) * (1.6 * 10^(-19) * input$Vg)/(1.38 * 10 ^ (-23) * input$Fif)))
+        (input$Isc/exp((input$Voc * 1.6 * 10^(-19))/(input$Fif * input$Tc * 1.38 * 10 ^ (-23)))) * ((input$Tc/input$Tr)^3) * exp((((1/input$Tr) - (1/input$Tc)) * (1.6 * 10^(-19) * input$Vg)/(1.38 * 10 ^ (-23) * input$Fif)))
     })
     output$Igc <- renderText({
         (input$Msc * (input$Tc - input$Tr) + input$Isc) * input$G
     })
-    output$Ipv <- renderText({
-        input$Igcd - input$Iod * (exp((1.6 * 10^(-19) * input$Voc)/(1.38 * 10 ^ (-23) * input$Fif * input$Tc)) - 1) - input$Vd/input$Rp
+    output$IPV <- renderText({
+        ((input$Msc * (input$Tc - input$Tr) + input$Isc) * input$G) - (((input$Isc/exp((input$Voc * 1.6 * 10^(-19))/(input$Fif * input$Tc * 1.38 * 10 ^ (-23)))) * ((input$Tc/input$Tr)^3) * exp((((1/input$Tr) - (1/input$Tc)) * (1.6 * 10^(-19) * input$Vg)/(1.38 * 10 ^ (-23) * input$Fif)))) * (exp((1.6 * 10^(-19) * input$Voc)/(1.38 * 10 ^(-23) * input$Fif * input$Tc)) - 1)) - (input$Vd/input$Rp)
     })
     
     

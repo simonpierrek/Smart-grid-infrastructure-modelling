@@ -8,7 +8,7 @@ library(shiny)
 ui <- fluidPage(
     theme = shinythemes::shinytheme("cosmo"),
     # Application title
-    h1(strong("Smart grid module"), "by Simon Pierre, , KIRIBOU Razak, KOKOYE Glory ", align = 'center'),
+    h1(strong("Smart grid module"), "by Simon Pierre", align = 'center'),
     #inputs for Hydropower module
     img(src = 'logo.gif', align = 'center'),
     #image of Wascal
